@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PromptMask MRI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">PM</div>
+          <div>
+            <h1>PromptMask MRI</h1>
+            <p>基于文本提示的盆腔 T2 MRI 解剖结构分割原型</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="field-label" for="caseSelect">病例</label>
+          <select id="caseSelect" class="select-control">
+            <option value="case-a">盆腔 T2 示例 A</option>
+            <option value="case-b">盆腔 T2 示例 B</option>
+          </select>
+          <span class="scope-badge">研究原型</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="viewer-panel" aria-label="MRI 查看器">
+          <div class="viewer-toolbar">
+            <div>
+              <span class="eyebrow">轴位切片</span>
+              <strong id="viewerTitle">盆腔 T2 示例 A</strong>
+            </div>
+            <div class="viewer-meta">
+              <span id="sliceLabel">切片 18 / 32</span>
+              <span id="targetMeta">未选择目标结构</span>
+            </div>
+          </div>
+
+          <div class="canvas-frame">
+            <canvas id="mriCanvas" width="720" height="720" aria-label="合成盆腔 MRI 与分割 mask 叠加视图"></canvas>
+            <div id="scanOverlay" class="scan-overlay hidden">
+              <div class="spinner"></div>
+              <span id="scanOverlayText">AI 正在分析目标结构</span>
+            </div>
+          </div>
+
+          <div class="slice-controls">
+            <label class="field-label" for="sliceSlider">切片</label>
+            <input id="sliceSlider" type="range" min="10" max="24" value="18" />
+            <input id="localImageInput" class="file-input" type="file" accept="image/png,image/jpeg,image/webp" />
+            <label class="secondary-button upload-button" for="localImageInput">本地图像</label>
+            <button id="clearImageBtn" class="secondary-button" type="button" disabled>清除图像</button>
+            <button id="resetViewBtn" class="secondary-button" type="button">重置视图</button>
+            <button id="exportBtn" class="secondary-button" type="button" disabled>导出 PNG</button>
+          </div>
+        </section>
+
+        <aside class="control-panel" aria-label="提示词控制面板">
+          <section class="panel-section">
+            <span class="eyebrow">文本提示</span>
+            <div class="prompt-row">
+              <input id="promptInput" class="prompt-input" type="text" value="显示膀胱" autocomplete="off" />
+              <button id="analyzeBtn" class="primary-button" type="button">开始分析</button>
+            </div>
+            <div id="promptFeedback" class="feedback-line">请输入或选择一个支持的盆腔解剖结构。</div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">目标结构</span>
+              <span id="targetCount">8 个结构</span>
+            </div>
+            <div id="targetGrid" class="target-grid"></div>
+          </section>
+
+          <section class="panel-section compact">
+            <div class="section-heading">
+              <span class="eyebrow">显示设置</span>
+              <span id="opacityValue">58%</span>
+            </div>
+            <label class="field-label" for="opacitySlider">Mask 透明度</label>
+            <input id="opacitySlider" type="range" min="10" max="90" value="58" />
+
+            <div class="color-row" aria-label="Mask color options">
+              <button class="swatch active" data-color="#15b8a6" style="--swatch:#15b8a6" aria-label="青绿色 mask"></button>
+              <button class="swatch" data-color="#f15b5b" style="--swatch:#f15b5b" aria-label="红色 mask"></button>
+              <button class="swatch" data-color="#f6bf26" style="--swatch:#f6bf26" aria-label="黄色 mask"></button>
+              <button class="swatch" data-color="#6f7dfb" style="--swatch:#6f7dfb" aria-label="蓝紫色 mask"></button>
+            </div>
+          </section>
+
+          <section class="panel-section status-section">
+            <span class="eyebrow">分析状态</span>
+            <dl class="status-grid">
+              <div>
+                <dt>状态</dt>
+                <dd id="statusText">待分析</dd>
+              </div>
+              <div>
+                <dt>目标</dt>
+                <dd id="targetText">无</dd>
+              </div>
+              <div>
+                <dt>模式</dt>
+                <dd>Mock 推理</dd>
+              </div>
+              <div>
+                <dt>耗时</dt>
+                <dd id="latencyText">--</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel-section">
+            <span class="eyebrow">历史记录</span>
+            <div id="historyList" class="history-list">
+              <span class="empty-state">暂无生成结果。</span>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="demo-footer">
+        <span>仅用于研究原型展示，不用于临床诊断、疾病分期或治疗决策。</span>
+        <span id="modelNote">当前使用合成示例图与预生成 mock masks。</span>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
