@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PromptMask MRI</title>
+    <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -50,6 +51,7 @@
           <div class="slice-controls">
             <label class="field-label" for="sliceSlider">切片</label>
             <input id="sliceSlider" type="range" min="10" max="24" value="18" />
+            <button id="realSampleBtn" class="secondary-button" type="button">真实样例：膀胱</button>
             <input id="localImageInput" class="file-input" type="file" accept="image/png,image/jpeg,image/webp" />
             <label class="secondary-button upload-button" for="localImageInput">本地图像</label>
             <button id="clearImageBtn" class="secondary-button" type="button" disabled>清除图像</button>

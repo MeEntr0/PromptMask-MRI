@@ -12,7 +12,7 @@ Pelvic MRI + Text Prompt -> Target-specific Binary Mask
 
 Current stage: Static mock demo and product documentation.
 
-The first demo version is designed as a mock-first, model-ready prototype. It can use prepared MRI images and mock masks to validate the product workflow before connecting to the trained PyTorch segmentation model.
+The first demo version is designed as a mock-first, model-ready prototype. It can use prepared MRI images, mock masks, and one cleaned authorized bladder sample to validate the product workflow before connecting to the trained PyTorch segmentation model.
 
 ## Live Demo
 
@@ -29,6 +29,12 @@ https://meentr0.github.io/PromptMask-MRI/?prompt=%E6%98%BE%E7%A4%BA%E8%86%80%E8%
 ## Run Locally
 
 This repository ships a dependency-free static prototype with a Chinese user interface.
+
+The demo includes:
+
+- Mock pelvic MRI cases for all 8 supported target structures.
+- A real bladder sample mode using cleaned PNG assets in `assets/real-sample`.
+- Local image preview, which runs fully in the browser and does not upload files.
 
 Open `index.html` directly in a browser, or run a local static server:
 

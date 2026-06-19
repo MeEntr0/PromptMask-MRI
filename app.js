@@ -6,6 +6,7 @@ const viewerTitle = document.getElementById("viewerTitle");
 const sliceSlider = document.getElementById("sliceSlider");
 const sliceLabel = document.getElementById("sliceLabel");
 const targetMeta = document.getElementById("targetMeta");
+const realSampleBtn = document.getElementById("realSampleBtn");
 const localImageInput = document.getElementById("localImageInput");
 const clearImageBtn = document.getElementById("clearImageBtn");
 const promptInput = document.getElementById("promptInput");
@@ -40,6 +41,13 @@ const CASES = {
     shiftY: -8,
     scale: 0.96,
   },
+};
+
+const REAL_SAMPLE = {
+  title: "真实样例：膀胱",
+  rawSrc: "assets/real-sample/raw.png",
+  maskSrc: "assets/real-sample/bladder-mask.png",
+  targetId: "bladder",
 };
 
 const TARGETS = [
@@ -104,6 +112,10 @@ const state = {
   customImage: null,
   customImageName: "",
   customImageUrl: "",
+  realSampleActive: false,
+  realSampleRaw: null,
+  realSampleMask: null,
+  imageRect: null,
 };
 
 function normalizePrompt(value) {
@@ -147,6 +159,19 @@ function renderTargetButtons() {
       analyzeTarget(target);
     });
     targetGrid.appendChild(button);
+  });
+}
+
+function getTargetById(id) {
+  return TARGETS.find((target) => target.id === id);
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
   });
 }
 
@@ -213,6 +238,7 @@ function drawUploadedImage() {
   const height = image.height * scale;
   const x = (canvas.width - width) / 2;
   const y = (canvas.height - height) / 2;
+  state.imageRect = { x, y, width, height };
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
@@ -227,6 +253,13 @@ function drawUploadedImage() {
 }
 
 function drawBaseImage() {
+  state.imageRect = null;
+
+  if (state.realSampleActive && state.realSampleRaw) {
+    drawRealSampleImage();
+    return;
+  }
+
   if (state.customImage) {
     drawUploadedImage();
     return;
@@ -294,7 +327,36 @@ function drawBaseImage() {
   ctx.restore();
 }
 
+function drawRealSampleImage() {
+  ctx.save();
+  ctx.fillStyle = "#080c10";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const image = state.realSampleRaw;
+  const scale = Math.min(canvas.width / image.width, canvas.height / image.height);
+  const width = image.width * scale;
+  const height = image.height * scale;
+  const x = (canvas.width - width) / 2;
+  const y = (canvas.height - height) / 2;
+  state.imageRect = { x, y, width, height };
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(image, x, y, width, height);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x, y, width, height);
+  ctx.restore();
+}
+
 function drawMask(targetId) {
+  if (state.realSampleActive) {
+    if (targetId === REAL_SAMPLE.targetId && state.realSampleMask && state.imageRect) {
+      drawRealSampleMask();
+    }
+    return;
+  }
+
   const g = shapeConfig();
   const color = state.color;
   const alpha = state.opacity;
@@ -345,6 +407,24 @@ function drawMask(targetId) {
   ctx.restore();
 }
 
+function drawRealSampleMask() {
+  const rect = state.imageRect;
+  const offscreen = document.createElement("canvas");
+  offscreen.width = canvas.width;
+  offscreen.height = canvas.height;
+  const offCtx = offscreen.getContext("2d");
+
+  offCtx.fillStyle = state.color;
+  offCtx.fillRect(rect.x, rect.y, rect.width, rect.height);
+  offCtx.globalCompositeOperation = "destination-in";
+  offCtx.drawImage(state.realSampleMask, rect.x, rect.y, rect.width, rect.height);
+
+  ctx.save();
+  ctx.globalAlpha = state.opacity;
+  ctx.drawImage(offscreen, 0, 0);
+  ctx.restore();
+}
+
 function renderCanvas() {
   drawBaseImage();
 
@@ -355,10 +435,17 @@ function renderCanvas() {
 
 function renderStatus() {
   const currentCase = CASES[state.caseId];
-  viewerTitle.textContent = state.customImage ? `本地图像：${state.customImageName}` : currentCase.title;
-  sliceLabel.textContent = state.customImage ? "本地预览" : `切片 ${state.slice} / 32`;
+
+  if (state.realSampleActive) {
+    viewerTitle.textContent = REAL_SAMPLE.title;
+    sliceLabel.textContent = "真实样例";
+  } else {
+    viewerTitle.textContent = state.customImage ? `本地图像：${state.customImageName}` : currentCase.title;
+    sliceLabel.textContent = state.customImage ? "本地预览" : `切片 ${state.slice} / 32`;
+  }
+
   opacityValue.textContent = `${Math.round(state.opacity * 100)}%`;
-  clearImageBtn.disabled = !state.customImage;
+  clearImageBtn.disabled = !state.customImage && !state.realSampleActive;
 
   if (state.activeTarget) {
     targetMeta.textContent = state.activeTarget.label;
@@ -406,6 +493,10 @@ function addHistory(target) {
 function analyzeTarget(target, delay = null) {
   if (state.isAnalyzing) {
     return;
+  }
+
+  if (state.realSampleActive && target.id !== REAL_SAMPLE.targetId) {
+    clearRealSample(false);
   }
 
   const latency = delay ?? Math.round(760 + Math.random() * 640);
@@ -474,16 +565,71 @@ function clearUploadedImage(shouldRender = true) {
   }
 }
 
+function clearRealSample(shouldRender = true) {
+  state.realSampleActive = false;
+  state.imageRect = null;
+
+  if (shouldRender) {
+    resetView();
+  }
+}
+
+function clearViewerImage() {
+  clearUploadedImage(false);
+  clearRealSample(false);
+  resetView();
+}
+
+async function activateRealSample() {
+  if (state.isAnalyzing) {
+    return;
+  }
+
+  const target = getTargetById(REAL_SAMPLE.targetId);
+  realSampleBtn.disabled = true;
+  statusText.textContent = "加载真实样例";
+  latencyText.textContent = "--";
+  setFeedback("正在加载真实授权样例图像。");
+
+  try {
+    if (!state.realSampleRaw || !state.realSampleMask) {
+      const [raw, mask] = await Promise.all([loadImage(REAL_SAMPLE.rawSrc), loadImage(REAL_SAMPLE.maskSrc)]);
+      state.realSampleRaw = raw;
+      state.realSampleMask = mask;
+    }
+
+    clearUploadedImage(false);
+    state.realSampleActive = true;
+    state.activeTarget = target;
+    state.history = [target];
+    promptInput.value = "显示膀胱";
+    statusText.textContent = "Mask 已生成";
+    latencyText.textContent = "真实样例";
+    setFeedback("已加载真实授权样例：膀胱 mask overlay。", "success");
+    renderHistory();
+    renderCanvas();
+    renderStatus();
+  } catch (error) {
+    clearRealSample(false);
+    statusText.textContent = "加载失败";
+    setFeedback("无法加载真实样例资产，请检查 assets/real-sample 文件。", "error");
+  } finally {
+    realSampleBtn.disabled = false;
+  }
+}
+
 function exportPng() {
   const targetName = state.activeTarget ? state.activeTarget.short.replace(/\s+/g, "-") : "overlay";
   const anchor = document.createElement("a");
-  anchor.download = `promptmask-${state.caseId}-${targetName}.png`;
+  const caseName = state.realSampleActive ? "real-bladder" : state.caseId;
+  anchor.download = `promptmask-${caseName}-${targetName}.png`;
   anchor.href = canvas.toDataURL("image/png");
   anchor.click();
 }
 
 caseSelect.addEventListener("change", () => {
   clearUploadedImage(false);
+  clearRealSample(false);
   state.caseId = caseSelect.value;
   resetView();
 });
@@ -505,6 +651,7 @@ localImageInput.addEventListener("change", () => {
 
   image.onload = () => {
     clearUploadedImage(false);
+    clearRealSample(false);
     state.customImage = image;
     state.customImageName = file.name;
     state.customImageUrl = imageUrl;
@@ -527,7 +674,8 @@ localImageInput.addEventListener("change", () => {
   image.src = imageUrl;
 });
 
-clearImageBtn.addEventListener("click", () => clearUploadedImage(true));
+realSampleBtn.addEventListener("click", activateRealSample);
+clearImageBtn.addEventListener("click", clearViewerImage);
 
 sliceSlider.addEventListener("input", () => {
   state.slice = Number(sliceSlider.value);
