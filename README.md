@@ -10,25 +10,9 @@ Pelvic MRI + Text Prompt -> Target-specific Binary Mask
 
 ## Project Status
 
-Current stage: Static mock demo and product documentation.
+Current stage: Product definition and MVP planning.
 
 The first demo version is designed as a mock-first, model-ready prototype. It can use prepared MRI images and mock masks to validate the product workflow before connecting to the trained PyTorch segmentation model.
-
-## Run the Demo
-
-This repository currently ships a dependency-free static prototype.
-
-Open `index.html` directly in a browser, or run a local static server:
-
-```bash
-python -m http.server 4173
-```
-
-Then visit:
-
-```text
-http://127.0.0.1:4173/
-```
 
 ## Why This Project
 
@@ -190,3 +174,4 @@ All generated masks should be treated as research and visualization outputs only
 ## Documentation
 
 - [Product Requirements Document](docs/PRD.md)
+
