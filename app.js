@@ -562,3 +562,14 @@ exportBtn.addEventListener("click", exportPng);
 
 renderTargetButtons();
 resetView();
+
+const initialParams = new URLSearchParams(window.location.search);
+const initialPrompt = initialParams.get("prompt") || initialParams.get("target");
+
+if (initialPrompt) {
+  promptInput.value = initialPrompt;
+}
+
+if (initialPrompt && initialParams.get("auto") === "1") {
+  window.setTimeout(handleAnalyze, 250);
+}

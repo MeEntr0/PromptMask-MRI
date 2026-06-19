@@ -1,4 +1,4 @@
-# PromptMask MRI
+﻿# PromptMask MRI
 
 PromptMask MRI is a research prototype for prompt-guided pelvic T2 MRI anatomical structure segmentation. It lets users specify a target structure through text prompts and view the corresponding binary segmentation mask overlay on MRI images.
 
@@ -14,7 +14,19 @@ Current stage: Static mock demo and product documentation.
 
 The first demo version is designed as a mock-first, model-ready prototype. It can use prepared MRI images and mock masks to validate the product workflow before connecting to the trained PyTorch segmentation model.
 
-## Run the Demo
+## Live Demo
+
+GitHub Pages demo:
+
+https://meentr0.github.io/PromptMask-MRI/
+
+Auto-generated bladder mask view:
+
+https://meentr0.github.io/PromptMask-MRI/?prompt=%E6%98%BE%E7%A4%BA%E8%86%80%E8%83%B1&auto=1
+
+![PromptMask MRI demo](assets/demo-screenshot.png)
+
+## Run Locally
 
 This repository ships a dependency-free static prototype with a Chinese user interface.
 
@@ -190,4 +202,6 @@ All generated masks should be treated as research and visualization outputs only
 ## Documentation
 
 - [Product Requirements Document](docs/PRD.md)
+- [Product Case Study](docs/CASE_STUDY.md)
+
 
