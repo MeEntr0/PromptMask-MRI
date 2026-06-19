@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PromptMask MRI</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">PM</div>
+          <div>
+            <h1>PromptMask MRI</h1>
+            <p>Prompt-guided pelvic T2 MRI segmentation prototype</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="field-label" for="caseSelect">Case</label>
+          <select id="caseSelect" class="select-control">
+            <option value="case-a">Pelvic T2 Case A</option>
+            <option value="case-b">Pelvic T2 Case B</option>
+          </select>
+          <span class="scope-badge">Research demo</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="viewer-panel" aria-label="MRI viewer">
+          <div class="viewer-toolbar">
+            <div>
+              <span class="eyebrow">Axial slice</span>
+              <strong id="viewerTitle">Pelvic T2 Case A</strong>
+            </div>
+            <div class="viewer-meta">
+              <span id="sliceLabel">Slice 18 / 32</span>
+              <span id="targetMeta">No target selected</span>
+            </div>
+          </div>
+
+          <div class="canvas-frame">
+            <canvas id="mriCanvas" width="720" height="720" aria-label="Synthetic pelvic MRI with segmentation overlay"></canvas>
+            <div id="scanOverlay" class="scan-overlay hidden">
+              <div class="spinner"></div>
+              <span id="scanOverlayText">AI analyzing target structure</span>
+            </div>
+          </div>
+
+          <div class="slice-controls">
+            <label class="field-label" for="sliceSlider">Slice</label>
+            <input id="sliceSlider" type="range" min="10" max="24" value="18" />
+            <button id="resetViewBtn" class="secondary-button" type="button">Reset view</button>
+            <button id="exportBtn" class="secondary-button" type="button" disabled>Export PNG</button>
+          </div>
+        </section>
+
+        <aside class="control-panel" aria-label="Prompt controls">
+          <section class="panel-section">
+            <span class="eyebrow">Prompt</span>
+            <div class="prompt-row">
+              <input id="promptInput" class="prompt-input" type="text" value="show bladder" autocomplete="off" />
+              <button id="analyzeBtn" class="primary-button" type="button">Analyze</button>
+            </div>
+            <div id="promptFeedback" class="feedback-line">Ready to parse a supported pelvic structure.</div>
+          </section>
+
+          <section class="panel-section">
+            <div class="section-heading">
+              <span class="eyebrow">Targets</span>
+              <span id="targetCount">8 structures</span>
+            </div>
+            <div id="targetGrid" class="target-grid"></div>
+          </section>
+
+          <section class="panel-section compact">
+            <div class="section-heading">
+              <span class="eyebrow">Display</span>
+              <span id="opacityValue">58%</span>
+            </div>
+            <label class="field-label" for="opacitySlider">Mask opacity</label>
+            <input id="opacitySlider" type="range" min="10" max="90" value="58" />
+
+            <div class="color-row" aria-label="Mask color options">
+              <button class="swatch active" data-color="#15b8a6" style="--swatch:#15b8a6" aria-label="Teal mask color"></button>
+              <button class="swatch" data-color="#f15b5b" style="--swatch:#f15b5b" aria-label="Red mask color"></button>
+              <button class="swatch" data-color="#f6bf26" style="--swatch:#f6bf26" aria-label="Amber mask color"></button>
+              <button class="swatch" data-color="#6f7dfb" style="--swatch:#6f7dfb" aria-label="Indigo mask color"></button>
+            </div>
+          </section>
+
+          <section class="panel-section status-section">
+            <span class="eyebrow">Analysis</span>
+            <dl class="status-grid">
+              <div>
+                <dt>Status</dt>
+                <dd id="statusText">Ready</dd>
+              </div>
+              <div>
+                <dt>Target</dt>
+                <dd id="targetText">None</dd>
+              </div>
+              <div>
+                <dt>Mode</dt>
+                <dd>Mock inference</dd>
+              </div>
+              <div>
+                <dt>Latency</dt>
+                <dd id="latencyText">--</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel-section">
+            <span class="eyebrow">History</span>
+            <div id="historyList" class="history-list">
+              <span class="empty-state">No generated masks yet.</span>
+            </div>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="demo-footer">
+        <span>Research prototype only. Not intended for clinical diagnosis or treatment decision-making.</span>
+        <span id="modelNote">Synthetic demo image and pre-generated mock masks.</span>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
